@@ -7,3 +7,4 @@
 *.cmx
 _build
 *.o
+.vscode/tasks.json
