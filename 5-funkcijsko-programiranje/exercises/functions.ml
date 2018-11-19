@@ -4,7 +4,15 @@
  Hint: Write a function for reversing lists.
 [*----------------------------------------------------------------------------*)
 
-let rec reverse = ()
+let reverse xs =
+  let rec reverse_aux acc xs =
+    match xs with
+    | [] -> acc
+    | x :: xs -> 
+    let acc = x :: acc in
+    reverse_aux acc xs
+  in 
+  reverse_aux [] xs
 
 (*----------------------------------------------------------------------------*]
  The function [repeat x n] returns a list with [n] repetitions of [x]. For
@@ -16,7 +24,11 @@ let rec reverse = ()
  - : string list = []
 [*----------------------------------------------------------------------------*)
 
-let rec repeat = ()
+let rec repeat x n =
+  match n <= 0 with
+  | true -> []
+  | false -> x :: (repeat x (n-1))
+
 
 (*----------------------------------------------------------------------------*]
  The function [range] accepts an integer and returns a list of all non-negative
@@ -28,7 +40,13 @@ let rec repeat = ()
  - : int list = [0; 1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 [*----------------------------------------------------------------------------*)
 
-let rec range = ()
+let range n =
+  let rec range_aux acc n =
+    match n < 0 with
+    | true -> acc 
+    | false -> range_aux (n::acc) (n-1)
+  in 
+  range_aux [] n 
 
 (*----------------------------------------------------------------------------*]
  The function [map f list] accepts a list [list] of form [x0; x1; x2; ...] and
@@ -39,7 +57,9 @@ let rec range = ()
  - : int list = [2; 3; 4; 5; 6]
 [*----------------------------------------------------------------------------*)
 
-let rec map = ()
+let rec map f xs = match xs with
+  | [] -> []
+  | x :: xs -> (f x) :: (map f xs)
 
 (*----------------------------------------------------------------------------*]
   The function [map_tlrec] is the tail recursive version of map.
@@ -49,7 +69,12 @@ let rec map = ()
  - : int list = [2; 3; 4; 5; 6]
 [*----------------------------------------------------------------------------*)
 
-let rec map_tlrec = ()
+let map_tlrec f xs =
+  let rec map_aux acc x = match x with
+    | [] -> reverse acc
+    | x :: xs -> map_aux (f x :: acc) xs
+  in
+  map_aux [] xs
 
 (*----------------------------------------------------------------------------*]
  The function [mapi f list] accepts a two argument function and returns a list
@@ -73,7 +98,13 @@ let rec mapi = ()
  Exception: Failure "Different lengths of input lists.".
 [*----------------------------------------------------------------------------*)
 
-let rec zip = ()
+let rec zip list1 list2 =
+  match (list1, list2) with
+  | ([], []) -> []
+  | (x :: xs, y :: ys) -> (x, y) :: (zip xs ys)
+  | (_ :: _, [])
+  | ([], _ :: _) -> failwith "you failed."
+
 
 (*----------------------------------------------------------------------------*]
  The function [zip_enum_tlrec] accepts lists [x_0; x_1; ...] and [y_0; y_1; ...]
@@ -84,7 +115,17 @@ let rec zip = ()
  - : (int * string * int) list = [(0, "a", 7); (1, "b", 3); (2, "c", 4)]
 [*----------------------------------------------------------------------------*)
 
-let rec zip_enum_tlrec = ()
+let zip_enum_tlrec list1 list2 =
+  let rec zipe_aux i acc list1 list2 =
+    match list1, list2 with
+    | [], [] -> reverse acc
+    | _, [] | [], _ -> failwith "Different lengths of input lists."
+    | x :: xs, y :: ys ->
+      let element = (i, x, y) in
+      zipe_aux (i + 1) (element :: acc) xs ys
+   in
+   zipe_aux 0 [] list1 list2
+
 (*----------------------------------------------------------------------------*]
  The function [unzip] is the inverse of [zip]. It accepts a list of pairs
  [(x0, y0); (x1, y1); ...] and returns the pair ([x0; x1; ...], [y0; y1; ...]).
@@ -93,7 +134,11 @@ let rec zip_enum_tlrec = ()
  - : int list * string list = ([0; 1; 2], ["a"; "b"; "c"])
 [*----------------------------------------------------------------------------*)
 
-let rec unzip = ()
+let rec unzip = function
+    | [] -> ([], [])
+    | (x, y) :: tl -> 
+      let (xs, ys) = unzip tl in
+      (x :: xs, y :: ys)
 
 (*----------------------------------------------------------------------------*]
  The function [unzip_tlrec] is the tail recursive version of [unzip].
