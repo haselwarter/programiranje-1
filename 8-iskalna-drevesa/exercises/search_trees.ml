@@ -226,7 +226,7 @@ let succ bst =
  opposed to [dict_get]. 
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  # print_dict test_dict;;
- a : 1
+ a : 0
  b : 1
  c : -2
  d : 2
@@ -240,13 +240,13 @@ let succ bst =
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  # dict_insert "1" 14 test_dict |> print_dict;;
  1 : 14
- a : 1
+ a : 0
  b : 1
  c : -2
  d : 2
  - : unit = ()
  # dict_insert "c" 14 test_dict |> print_dict;;
- a : 1
+ a : 0
  b : 1
  c : 14
  d : 2
