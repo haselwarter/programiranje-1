@@ -183,7 +183,18 @@ let succ bst =
  Node (Node (Node (Empty, 0, Empty), 2, Empty), 5,
  Node (Node (Empty, 6, Empty), 11, Empty))
 [*----------------------------------------------------------------------------*)
-
+let rec delete x = function
+     | Empty -> Empty
+     | (Node (y, l, r) as t) ->
+          if x < y then 
+               Node (y, delete x l, r)
+          else if x > y then 
+               Node (y, l, delete x r)
+          else (* x = y *)
+               match succ t with 
+               | None -> l 
+               | Some s -> let r_without_s = delete s r in 
+                           Node (s, l, r_without_s)
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  DICTIONARIES
@@ -195,7 +206,7 @@ let succ bst =
  dictionary requires a type for keys and a type for values, we parametrize the
  type as [('key, 'value) dict].
 [*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*)
-
+type ('key, 'value) dict = ('key * 'value) tree
 
 (*----------------------------------------------------------------------------*]
  Write the test case [test_dict]:
@@ -205,7 +216,9 @@ let succ bst =
          /
      "c":-2
 [*----------------------------------------------------------------------------*)
-
+let test_dict 
+     : (string, int) dict 
+     = Node (("b", 1), leaf ("a", 0) Node (("d", 2), leaf ("c", -2), Empty))
 (*----------------------------------------------------------------------------*]
  The function [dict_get key dict] returns the value with the given key. Because
  the  dictionary might not include the given key, we return an [option].
@@ -215,7 +228,12 @@ let succ bst =
  # dict_get "c" test_dict;;
  - : int option = Some (-2)
 [*----------------------------------------------------------------------------*)
-
+let rec get_dict k = function 
+  | Empty -> None
+  | Node ((k', v), l, r) -> if k = k' then Some v 
+     else if k < k' then 
+          get_dict k l 
+     else get dict k r
       
 (*----------------------------------------------------------------------------*]
  The function [print_dict] accepts a dictionary with key of type [string] and
@@ -232,7 +250,13 @@ let succ bst =
  d : 2
  - : unit = ()
 [*----------------------------------------------------------------------------*)
-
+let rec print_dict = function 
+     | Empty -> ()
+     | Node ((k, v), l, r) -> 
+          (print_dict l;
+           print_endline (k ^ " : " ^ (string_of_int v));
+           print_dict r
+          )
 
 (*----------------------------------------------------------------------------*]
  The function [dict_insert key value dict] inserts [value] into [dict] under the
