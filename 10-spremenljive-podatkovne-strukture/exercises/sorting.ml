@@ -8,7 +8,8 @@
  # let l = randlist 10 10 ;;
  val l : int list = [0; 1; 0; 4; 0; 9; 1; 2; 5; 4]
 [*----------------------------------------------------------------------------*)
-
+let rec randlist len max =
+  if len <= 0 then [] else Random.int max :: randlist (len - 1) max
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  We can now use [randlist] to test our sorting functions (named [our_sort] in
@@ -34,13 +35,20 @@
  # insert 7 [];;
  - : int list = [7]
 [*----------------------------------------------------------------------------*)
-
+let rec insert y = function 
+  | [] -> [y]
+  | x :: xs -> if y <= x then y :: x :: xs else x :: (insert y xs)
 
 (*----------------------------------------------------------------------------*]
  The empty list is sorted. The function [insertion_sort] sorts a list by
  consecutively inserting all of its elements into the empty list.
 [*----------------------------------------------------------------------------*)
-
+let string_of_list xs = 
+  (List.fold_left (fun acc x -> acc ^ (string_of_int x) ^ "; ") "[" xs) ^ "]"
+let insertion_sort xs = List.fold_left 
+    (fun acc x -> 
+      print_endline ("inserting " ^ (string_of_int x) ^ " into " ^ string_of_list acc) ;
+      insert x acc) [] xs
 
 
 (*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*]
@@ -52,7 +60,18 @@
  is the smallest element in [list] and [list'] is equal to [list] with the
  first occurance of [z] removed. If the list is empty it returns [None].
 [*----------------------------------------------------------------------------*)
-
+let min_and_rest list =
+  let rec remove_once z = function 
+    | [] -> failwith "Not found"
+    | x :: xs -> if x = z then xs else x :: (remove_once z xs)
+  in 
+  let rec find_min current_min = function 
+    | [] -> current_min
+    | x :: xs -> find_min (min x current_min) xs
+  in
+  match list with 
+  | [] -> None
+  | x :: xs -> let z = find_min x xs in Some (z, remove_once z list)
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Selection sort works by keeping a list partitioned into two sublists where the
@@ -71,8 +90,13 @@
  The function [selection_sort] implements the above algorithm.
  Hint: Use [min_and_rest] from the previous exercise.
 [*----------------------------------------------------------------------------*)
-
-
+let selection_sort list =
+  let rec sort sorted unsorted =
+    match min_and_rest unsorted with
+    | None -> List.rev sorted
+    | Some (x, unsorted) -> sort (x :: sorted) unsorted
+  in 
+  sort [] list
 
 (*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*]
  Selection Sort with Arrays
@@ -100,15 +124,24 @@
  # test;;
  - : int array = [|0; 4; 2; 3; 1|]
 [*----------------------------------------------------------------------------*)
-
+let swap a i j = 
+  let v = a.(i) in 
+  a.(i) <- a.(j);
+  a.(j) <- v
 
 (*----------------------------------------------------------------------------*]
  The function [index_min a lower upper] computes the index of the smallest
  element in [a] between indices [lower] and [upper] (both included).
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  index_min [|0; 2; 9; 3; 6|] 2 4 = 4
-[*----------------------------------------------------------------------------*)
-
+[*---------------------------------------------------------------------------*)
+let index_min a lower upper =
+  let index_min = ref lower in
+  for i = lower to upper do
+    let () = if a.(i) < a.(!index_min) then index_min.contents <- i else ()
+    in
+  done ;
+  ! index_min
 
 (*----------------------------------------------------------------------------*]
  The function [selection_sort_array] implements in-place selection sort.
@@ -116,4 +149,14 @@
  Hint: To test your function, you can use the functions [Array.of_list] and
  [Array.to_list] combined with [randlist].
 [*----------------------------------------------------------------------------*)
+let selection_sort_array a =
+  let index_end = Array.length a - 1 in 
+  for boundary_sorted = 0 to index_end - 1 do 
+    let i_min = index_min a boundary_sorted index_end in
+    swap a i_min boundary_sorted
+  done
 
+let selection_sort_list list =
+  let a = Array.of_list list in 
+  selection_sort_array a ;
+  Array.to_list a
