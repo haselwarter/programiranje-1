@@ -21,7 +21,19 @@ let test_matrix =
      [| 2 ; 4 ; 5 |];
      [| 7 ; 0 ; 1 |] |]
 
-(*----------------------------------------------------------------------------*]
+let max_cheese cheese_matrix =
+  let dimx = Array.length cheese_matrix in 
+  if dimx = 0 then 0 else 
+  let dimy = Array.length cheese_matrix.(0) in
+  let rec best_path x y =
+    let current_cheese = cheese_matrix.(x).(y) in
+    let best_down = if (y+1) = dimy then 0 else best_path x (y+1) 
+    and best_right = if (x+1) = dimx then 0 else best_path (x+1) y in
+    current_cheese + max best_right best_down 
+  in 
+  best_path 0 0
+
+     (*----------------------------------------------------------------------------*]
  We are solving the problem of alternatingly colored towers. There are four
  different types of building blocks, two of them blue and two red. The blue
  blocks have heights 2 and 3 and the red ones 1 and 2.

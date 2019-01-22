@@ -8,7 +8,7 @@
    denominations: $1, $4, $7, $13, $28, $52, $91, $365.
 *)
 
-let denominations = [1; 4; 7; 13; 28; 52; 91; 365]
+let denominations = [1; (*4;*) 7; 17; 28; (* 52; 91; 365 *) ]
 
 
 (* 0.i) Formulate the problem precisely in natural language. *)
@@ -38,15 +38,67 @@ let denominations = [1; 4; 7; 13; 28; 52; 91; 365]
    later.
 *)
 
-let rec bills_greedy n = failwith "todo"
 
+let rec bills_greedy n =
+   if n < 0
+   then failwith "unsolvable"
+   else if n = 0
+   then []
+   else let rec max_le den acc = match den with
+       | [] -> acc
+       | h :: t -> if h > n then acc else
+           max_le t h in
+     let nxt = max_le denominations (-1) in
+     nxt :: (bills_greedy (n - nxt))
+ 
 (* 2.i) Describe and analyze a recursive algorithm that computes, given an
    integer k, the shortest list of bills needed to make k Dream Dollars. (Don’t
    worry about making your algorithm fast; just make sure it’s correct.)
 *)
 
-let rec bills_rec n = failwith "todo"
-
+let memoiziraj_rec odviti_f =
+   let rezultati = Hashtbl.create 512 in
+   let rec mem_f x =
+     match Hashtbl.find_opt rezultati x with
+     | None ->
+         let y = odviti_f mem_f x in
+         Hashtbl.add rezultati x y;
+         y
+     | Some y ->
+         y
+   in
+   mem_f
+ 
+let bills_rec = memoiziraj_rec (fun bills_rec n ->
+   if n < 0
+   then failwith "unsolvable"
+   else if n = 0
+   then []
+   else
+     let sols = List.map
+         (fun b -> let k = n - b in if k < 0 then None else
+             Some (b :: (bills_rec k))) denominations in
+     let sol =
+       List.fold_left (fun best next -> match (best, next) with
+           | (x, None) | (None, x) -> x
+           | (Some best, Some next) -> if List.length best < List.length next
+             then Some best else Some next) None sols in
+     match sol with
+     | None -> failwith ("couldn't solve " ^ (string_of_int n))
+     | Some sol -> sol)
+ 
+type example = { counter : int ; greedy : int list ; dynamic : int list }
+let counterexample () =
+   let i = ref 0
+   and example = ref None in
+   while !i < 500 && !example = None do
+      i := !i + 1 ;
+      let br = bills_rec !i and bg = bills_greedy !i in
+      if not (br = bg) then
+         example := Some ({ counter = !i ; greedy = bg ; dynamic = br })
+   done ;
+   !example
+ 
 
 (* 2.ii) Draw the call tree of your recursive definition for n = 5 and identify
    which subproblems are repeated. Can you find an evaluation order that will
